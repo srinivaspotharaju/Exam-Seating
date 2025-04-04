@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import axios from "axios";
 import "./AdminPage.css";
 
-
 const AdminPage = () => {
   const [roomCapacity, setRoomCapacity] = useState("");
   const [selectedRoom, setSelectedRoom] = useState("");
@@ -11,16 +10,14 @@ const AdminPage = () => {
 
   const branchOptions = ["CSE", "EEE", "IT", "Mechanical", "Civil"];
 
-  // Handle branch selection
   const handleBranchChange = (event) => {
     const branch = event.target.value;
-    if (!selectedBranches.includes(branch)) {
+    if (branch && !selectedBranches.includes(branch)) {
       setSelectedBranches([...selectedBranches, branch]);
       setBranchData({ ...branchData, [branch]: { startRoll: "", endRoll: "" } });
     }
   };
 
-  // Handle roll number change for each branch
   const handleRollNumberChange = (branch, field, value) => {
     setBranchData({
       ...branchData,
@@ -28,8 +25,24 @@ const AdminPage = () => {
     });
   };
 
-  // Submit data to MongoDB
+  const validateForm = () => {
+    if (!roomCapacity || !selectedRoom || selectedBranches.length === 0) {
+      alert("Please fill all required fields.");
+      return false;
+    }
+    for (const branch of selectedBranches) {
+      const { startRoll, endRoll } = branchData[branch] || {};
+      if (!startRoll || !endRoll) {
+        alert(`Please enter start and end roll numbers for ${branch}`);
+        return false;
+      }
+    }
+    return true;
+  };
+
   const handleSubmit = async () => {
+    if (!validateForm()) return;
+
     const data = {
       roomCapacity,
       selectedRoom,
@@ -39,16 +52,24 @@ const AdminPage = () => {
     try {
       await axios.post("http://localhost:5000/api/save-seating-data", data);
       alert("Data submitted successfully!");
+      // Clear form
+      setRoomCapacity("");
+      setSelectedRoom("");
+      setSelectedBranches([]);
+      setBranchData({});
     } catch (error) {
       console.error("Error submitting data:", error);
     }
   };
 
-  // Generate seating arrangement using Graph Coloring Algorithm
   const handleGenerate = async () => {
+    if (!validateForm()) return;
+
     try {
       const response = await axios.post("http://localhost:5000/api/generate-seating", {
-        room: roomCapacity,
+         room_capacity: roomCapacity,
+        branches:selectedRoom,
+        roll_numbers:branchData,
       });
       alert("Seating arrangement generated successfully!");
       console.log("Seating Arrangement:", response.data);
@@ -61,7 +82,6 @@ const AdminPage = () => {
     <div className="admin-container">
       <h2>Admin - Seating Arrangement</h2>
 
-      {/* Room Capacity Selection */}
       <label>Room Capacity:</label>
       <input
         type="number"
@@ -70,7 +90,6 @@ const AdminPage = () => {
         placeholder="Enter room capacity"
       />
 
-      {/* Room Selection */}
       <label>Select Room:</label>
       <select value={selectedRoom} onChange={(e) => setSelectedRoom(e.target.value)}>
         <option value="">Select Room</option>
@@ -79,18 +98,18 @@ const AdminPage = () => {
         <option value="Room 103">Room 103</option>
       </select>
 
-      {/* Branch Selection */}
       <label>Select Branches:</label>
       <select onChange={handleBranchChange}>
         <option value="">Select Branch</option>
-        {branchOptions.map((branch, index) => (
-          <option key={index} value={branch}>
-            {branch}
-          </option>
-        ))}
+        {branchOptions
+          .filter((branch) => !selectedBranches.includes(branch))
+          .map((branch, index) => (
+            <option key={index} value={branch}>
+              {branch}
+            </option>
+          ))}
       </select>
 
-      {/* Roll Number Inputs */}
       {selectedBranches.map((branch) => (
         <div key={branch} className="branch-inputs">
           <h4>{branch}</h4>
@@ -109,7 +128,6 @@ const AdminPage = () => {
         </div>
       ))}
 
-      {/* Submit & Generate Buttons */}
       <button className="submit-btn" onClick={handleSubmit}>Submit</button>
       <button className="generate-btn" onClick={handleGenerate}>Generate</button>
     </div>
