@@ -39,11 +39,11 @@ def generate_seating():
 
     data = request.json  # Receive room, branches, and roll number details from frontend
     print(data)
-    room = data.get("room")
+    room_capacity = data.get("room_capacity")
     branches = data.get("branches")
     roll_numbers = data.get("roll_numbers")  # Dictionary { "CSE": [start, end], "ECE": [start, end] }
 
-    if not room or not branches or not roll_numbers:
+    if not room_capacity or not branches or not roll_numbers:
         return jsonify({"error": "Missing required fields"}), 400
     
 
@@ -51,11 +51,11 @@ def generate_seating():
 
 
     # Generate seating arrangement using the Graph Coloring Algorithm
-    seating_plan = generate_seating_arrangement(room, branches, roll_numbers)
+    seating_plan = generate_seating_arrangement(room_capacity, branches, roll_numbers)
 
     # Save the result in the database
     seating_collection.insert_one({
-        "room": room,
+        "room": room_capacity,
         "seating_plan": seating_plan
     })
 
