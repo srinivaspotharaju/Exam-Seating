@@ -33,7 +33,7 @@ const AdminPage = () => {
     const data = {
       roomCapacity,
       selectedRoom,
-      selectedBranches: branchData,
+      branchData,
     };
 
     try {
@@ -47,7 +47,9 @@ const AdminPage = () => {
   // Generate seating arrangement using Graph Coloring Algorithm
   const handleGenerate = async () => {
     try {
-      const response = await axios.post("http://localhost:5000/api/generate-seating");
+      const response = await axios.post("http://localhost:5000/api/generate-seating", {
+        room: roomCapacity,
+      });
       alert("Seating arrangement generated successfully!");
       console.log("Seating Arrangement:", response.data);
     } catch (error) {

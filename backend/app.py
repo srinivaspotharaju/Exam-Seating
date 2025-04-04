@@ -6,7 +6,7 @@ from models.seating_model import SeatingArrangement
 from algorithm.graphcoloring import generate_seating_arrangement
 
 app = Flask(__name__)
-CORS(app,origins=["http://localhost:5173"])  # Enable CORS for frontend-backend communication
+CORS(app)  # Enable CORS for frontend-backend communication
 # Connect to MongoDB
 db = connect_db()
 seating_collection = db["seating_arrangement"]
@@ -38,7 +38,7 @@ def generate_seating():
 
 
     data = request.json  # Receive room, branches, and roll number details from frontend
-    
+    print(data)
     room = data.get("room")
     branches = data.get("branches")
     roll_numbers = data.get("roll_numbers")  # Dictionary { "CSE": [start, end], "ECE": [start, end] }
